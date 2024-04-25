@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="ru">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ host }}/static/css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:ital,wght@0,100..700;1,100..700&display=swap"
+        rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap"
+        rel="stylesheet">
+    <title>{{ title }}</title>
+</head>
+
+<body>
+    <nav class="nav-bar">
+        <a href="/" class="logo"><span class="logo__wide-part">Ask</span>quickly</a>
+        <menu class="nav-bar__menu">
+            <a href="/desks"><li class="nav-bar__menu__item">Доски</li></a>
+            <a href="/about"><li class="nav-bar__menu__item nav-bar__menu__item_margin">О&nbsp;проекте</li></a>
+            {% if current_user.id == 2 %}
+            <a href="/login"><li class="nav-bar__menu__item">Логин</li></a>
+            {% else %}
+            <a href="/users/{{ current_user.id }}"><li class="nav-bar__menu__item nav-bar__menu__item_name">{{ current_user.name }} {{ current_user.surname }}</li></a>
+            {% endif %}
+        </menu>
+        <div class="nav-bar__visibility-decorator"></div>
+        <div class="nav-bar__hamburger-place">
+            <div class="hamburger">
+                <div class="hamburger__line"></div>
+                <div class="hamburger__line"></div>
+                <div class="hamburger__line"></div>
+            </div>
+        </div>
+    </nav>
+    {% block content %}
+    {% endblock %}
+    <script src="{{ host }}/static/js/main.js"></script>
+</body>
+
+</html>

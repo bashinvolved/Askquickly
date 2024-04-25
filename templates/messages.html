@@ -1,0 +1,201 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="obtain-box nodisplay">
+    <div class="obtain-box__box">
+        <p class="obtain-font font-35">Укажите ключ</p>
+        <form class="replybox" method="post">
+            <input class="replybox__text-area replybox__text-area_margin{% if warning %} replybox__text-area_warning {% endif %}"
+                   name="key"
+                   placeholder="{% if warning %}Ключ не подошел{% else %}{% endif %}" type="text" required>
+            <label for="submitkey" class="input-button input-button_mini">
+                <button id="submitkey" class="input-button__button" type="submit"></button>
+                <div class="input-button__button input-button__button_mini">>></div>
+            </label>
+            <input type="hidden" name="met" value="key">
+            <input id="keyplace" type="hidden" name="identifier" value="">
+        </form>
+    </div>
+</div>
+
+<div class="general-width-box">
+    <div class="counter">
+        <div class="counter__switcher">
+            <a href="{{ [(description|first).id - count_of_messages, 1]|max }}">
+                <div class="counter__switcher__arrow"></div>
+            </a>
+            <a href="{{ (description|last).id + 1 }}">
+                <div class="counter__switcher__arrow counter__switcher__arrow_right"></div>
+            </a>
+        </div>
+        <p>#{{ description[0].id }} — #{{ description[-1].id }} Всего: {{ total }}</p>
+    </div>
+</div>
+
+<div class="conversation-box">
+    <div class="conversation-box__conversation">
+        {% for elem in description|selectattr("root", "none") %}
+        {% if loop.first %}
+        <form class="replybox replybox_round" method="post" enctype="multipart/form-data">
+            <textarea class="replybox__text-area" name="text" placeholder="Спросите здесь" required></textarea>
+            <div class="flex-line">
+                <label class="input-button" for="pictures">
+                    <input type="file" id="pictures" name="pictures" multiple="multiple">
+                    <div class="input-button__button">Прикрепить</div>
+                </label>
+                <label for="sub" class="input-button input-button_mini">
+                    <button id="sub" class="input-button__button" type="submit"></button>
+                    <div class="input-button__button input-button__button_mini">>></div>
+                </label>
+            </div>
+            <input class="key" type="text" name="obtainkey" placeholder="Ключ присваивания">
+        </form>
+
+        <div class="wide-line"></div>
+        {% endif %}
+
+        <div class="flex-line">
+            <a href="/users/{{ elem.writer_id }}" class="narrator">{{ elem.writer }} | #{{ elem.id }}</a>
+            <div class="menu">
+                <p class="menu__item replybutton" data-identifier="{{ elem.id }}">Ответить</p>
+                {% if elem.writer_id != 2 and elem.writer_id == current_user.id or current_user.id == 1 %}
+                <p class="menu__item editbutton" data-identifier="{{ elem.id }}">Редактировать</p>
+                <a href="/api/messages/{{ elem.id }}/delete"><p class="menu__item deletebutton"
+                                                                data-identifier="{{ elem.id }}">Удалить</p></a>
+                {% endif %}
+                {% if elem.writer_id == 2 and current_user.id != 2 and elem.hashed_key %}
+                <p class="menu__item obtainbutton" data-identifier="{{ elem.id }}">Присвоить</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <form id="i{{ elem.id }}" class="replybox nodisplay" method="post" enctype="multipart/form-data"
+              data-removements="" data-text="{{ elem.text }}">
+            <textarea class="replybox__text-area" name="text" required></textarea>
+            <div class="flex-line">
+                <label class="input-button" for="pictures{{ elem.id }}">
+                    <input type="file" id="pictures{{ elem.id }}" name="pictures" multiple="multiple">
+                    <div class="input-button__button">Прикрепить</div>
+                </label>
+                <label for="sub{{ elem.id }}" class="input-button input-button_mini">
+                    <button id="sub{{ elem.id }}" class="input-button__button" type="submit"></button>
+                    <div class="input-button__button input-button__button_mini">>></div>
+                </label>
+            </div>
+            <input class="removements" type="hidden" name="removements" value="">
+            <input type="hidden" name="towhom" value="{{ elem.id }}">
+            <input type="hidden" class="met" name="met" value="post">
+            <input class="key" type="text" name="obtainkey" placeholder="Ключ присваивания">
+        </form>
+
+        <div class="wide-line"></div>
+
+        <div class="message-box">
+            <p class="message-box__text{% if not elem.illustrations %} message-box__text_wide{% endif %}">
+                {{ elem.text }}
+            </p>
+
+            <div id="ii{{ elem.id }}"
+                 class="{% if elem.illustrations %}message-box__carousel{% else %}nodisplay{% endif %}">
+                {% for illustration in elem.illustrations %}
+                <img class="message-box__carousel__item"
+                     src="{{ host }}/static/illustration/{{ illustration['id'] }}.png" data-i="{{ illustration.id }}"
+                     data-identifier="{{ elem.id }}">
+                {% endfor %}
+            </div>
+
+            <div class="{% if elem.illustrations %}message-box__carousel-button{% else %}nodisplay{% endif %}">
+                <div class="message-box__carousel-button__item"></div>
+                <div class="message-box__carousel-button__item"></div>
+                <div class="message-box__carousel-button__item"></div>
+                <div class="message-box__carousel-button__item"></div>
+                <div class="message-box__carousel-button__item_absolute"></div>
+            </div>
+        </div>
+
+        <div class="comments-box">
+            <div class="comments-box__item-name">
+                <p class="comments-box__item-name__header">Ответы</p>
+                <p>{{ description|selectattr("root", "equalto", elem.id)|list|length }}</p>
+            </div>
+            <div class="comments-box__item nodisplay">
+                <p class="comments-box__item__arrow">↳</p>
+                <div class="comments-box__item__comments">
+
+                    {% for el in description|selectattr("root", "equalto", elem.id) %}
+                    <div class="flex-line">
+                        <a href="/users/{{ el.writer_id }}" class="narrator">{{ el.writer }} | #{{ el.id }}</a>
+                        <div class="menu">
+                            <p class="menu__item replybutton" data-identifier="{{ el.id }}">Ответить</p>
+                            {% if el.writer_id != 2 and el.writer_id == current_user.id or current_user.id == 1 %}
+                            <p class="menu__item editbutton" data-identifier="{{ el.id }}">Редактировать</p>
+                            <a href="/api/messages/{{ el.id }}/delete"><p class="menu__item deletebutton"
+                                                                          data-identifier="{{ el.id }}">Удалить</p></a>
+                            {% endif %}
+                            {% if el.writer_id == 2 and current_user.id != 2 and el.hashed_key %}
+                            <p class="menu__item obtainbutton" data-identifier="{{ el.id }}">Присвоить</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <form id="i{{ el.id }}" class="replybox nodisplay" method="post" enctype="multipart/form-data"
+                          data-removements="" data-text="{{ el.text }}">
+                        <textarea class="replybox__text-area" name="text" required></textarea>
+                        <div class="flex-line">
+                            <label class="input-button" for="pictures{{ el.id }}">
+                                <input type="file" id="pictures{{ el.id }}" name="pictures" multiple="multiple">
+                                <div class="input-button__button">Прикрепить</div>
+                            </label>
+                            <label for="submit{{ el.id }}" class="input-button input-button_mini">
+                                <button id="submit{{ el.id }}" class="input-button__button" type="submit"></button>
+                                <div class="input-button__button input-button__button_mini">>></div>
+                            </label>
+                        </div>
+                        <input class="removements" type="hidden" name="removements" value="">
+                        <input type="hidden" name="towhom" value="{{ elem.id }}">
+                        <input type="hidden" name="towhom2" value="{{ el.id }}">
+                        <input type="hidden" class="met" name="met" value="post">
+                        <input class="key" type="text" name="obtainkey" placeholder="Ключ присваивания">
+                    </form>
+
+                    <div class="wide-line"></div>
+
+                    <div class="message-box">
+                        <p class="message-box__text{% if not el.illustrations %} message-box__text_wide{% endif %}">
+                            {{ el.text }}
+                        </p>
+
+                        <div id="ii{{ el.id }}"
+                             class="{% if el.illustrations %}message-box__carousel{% else %}nodisplay{% endif %}">
+                            {% for illustration in el.illustrations %}
+                            <img class="message-box__carousel__item"
+                                 src="{{ host }}/static/illustration/{{ illustration['id'] }}.png"
+                                 data-i="{{ illustration.id }}" data-identifier="{{ el.id }}">
+                            {% endfor %}
+                        </div>
+
+                        <div class="{% if el.illustrations %}message-box__carousel-button{% else %}nodisplay{% endif %}">
+                            <div class="message-box__carousel-button__item"></div>
+                            <div class="message-box__carousel-button__item"></div>
+                            <div class="message-box__carousel-button__item"></div>
+                            <div class="message-box__carousel-button__item"></div>
+                            <div class="message-box__carousel-button__item_absolute"></div>
+                        </div>
+                    </div>
+
+                    <div class="wide-line"></div>
+
+                    {% endfor %}
+
+                </div>
+            </div>
+        </div>
+
+        <div class="wide-line"></div>
+
+        {% endfor %}
+    </div>
+</div>
+
+{% endblock %}
