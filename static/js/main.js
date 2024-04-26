@@ -34,6 +34,11 @@ function addIllustrationToRemove(event) {
 }
 
 try {
+    for (elem of document.querySelectorAll("input"))
+        if (elem.type == "file")
+            elem.addEventListener("change", (event) => {
+                event.target.parentElement.parentElement.querySelector("p").textContent = `${event.target.files.length} файл(а/ов)`
+            })
     for (elem of document.querySelectorAll(".comments-box__item-name__header")) {
         elem.addEventListener("click", (event) => {
             event.target.parentElement.parentElement.querySelector(".comments-box__item").classList.toggle("nodisplay")

@@ -38,9 +38,12 @@ input[type="text"]::placeholder {
 }
 
 input[type="file"] {
-    width: 500px;
-    font-family: "Roboto";
-    padding: 20px;
+    display: none;
+}
+
+.attached {
+    margin-left: 10px;
+    color: gray;
 }
 
 .input-button {
@@ -770,6 +773,7 @@ button[type="submit"] {
 
 .hello-margin {
     margin-top: 102px;
+    padding: 0 20px;
 }
 
 .hello-description_fast {
@@ -783,17 +787,20 @@ button[type="submit"] {
 }
 
 .instruction {
-    margin: 20px 0;
+    margin: 30px 0;
+    font-family: "Verdana"
     font-size: 25px;
 }
 
 .instructions-margin {
     margin-top: 250px;
+    padding: 0 20px;
 }
 
 @media (width < 675px) {
     .flex-line_profile {
         flex-direction: column;
+        padding: 0 10px;
     }
 
     .username {
@@ -804,6 +811,10 @@ button[type="submit"] {
     .gridbox {
         width: 100%;
         margin-top: 20px;
+    }
+
+    .replybox_user {
+        margin-top: 0;
     }
 }
 
@@ -821,7 +832,7 @@ button[type="submit"] {
         position: absolute;
         margin-left: -20px;
         width: 100%;
-        height: 95dvh;
+        height: 100dvh;
         border-radius: 0 0 20px 20px;
         top: 0;
         max-width: none;
@@ -839,6 +850,14 @@ button[type="submit"] {
 }
 
 @media (width < 436px) {
+    .nav-bar__menu__item {
+        font-size: 25px;
+    }
+
+    .message-box__text {
+        font-size: 14px;
+    }
+
     .nav-bar {
         width: 100%;
         margin: none;
@@ -847,5 +866,55 @@ button[type="submit"] {
 
     .grid__tiles {
         grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    }
+
+    .instructions-margin {
+        font-size: 25px;
+    }
+
+    .conversation-box {
+        padding: 0;
+    }
+
+    .conversation-box__conversation {
+        padding: 10px;
+    }
+}
+
+@media (width < 700px) {
+    .comments-box__item__arrow {
+        font-size: 25px;
+        margin-right: 20px;
+    }
+
+    .hello {
+        padding: 20px;
+        font-size: 50px;
+    }
+
+    .comments-box__item-name__header {
+        margin: 10px;
+    }
+
+    .replybox {
+        padding: 15px;
+    }
+
+    .comments-box__item__comments {
+        width: calc(100% - 35px)
+    }
+
+    .menu {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .menu__item {
+        margin: 10px 0;
+        font-size: 12px;
+    }
+
+    .narrator {
+        font-size: 12px;
     }
 }
