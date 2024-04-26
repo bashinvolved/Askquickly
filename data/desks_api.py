@@ -122,13 +122,11 @@ def desks():
         session = db_session.create_session()
         flask_login.login_user(session.query(User).get(2), remember=True)
     return render_template("grid.html", title="Доски", start_url="desks/", end_url='',
-                           description=requests.get(f"{flask.request.host_url}/api/desks").json()["desks"],
-                           host=flask.request.host_url)
+                           description=requests.get(f"{flask.request.host_url}/api/desks").json()["desks"])
 
 
 @blueprint.route("/desks/<string:desk>")
 def threads(desk):
     return render_template("grid.html", title=desk, start_url=f"{desk}/", end_url='/1',
-                           description=requests.get(f"{flask.request.host_url}/api/desks/{desk}")
-                           .json()["threads"], host=flask.request.host_url)
+                           description=requests.get(f"{flask.request.host_url}/api/desks/{desk}").json()["threads"])
 

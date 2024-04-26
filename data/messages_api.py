@@ -169,6 +169,5 @@ def messages(desk, thread, message_identifier):
     return render_template("messages.html", total=total, title="Обсуждения",
                            current_user=current_user,
                            description=requests
-                           .get(f"{flask.request.host_url}/api/messages/{desk}/{thread}/{message_identifier}")
-                           .json()["messages"],
-                           host=flask.request.host_url, count_of_messages=COUNT_OF_MESSAGES)
+                           .get(f"/api/messages/{desk}/{thread}/{message_identifier}")
+                           .json()["messages"], count_of_messages=COUNT_OF_MESSAGES)

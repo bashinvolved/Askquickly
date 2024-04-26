@@ -107,7 +107,7 @@
                  class="{% if elem.illustrations %}message-box__carousel{% else %}nodisplay{% endif %}">
                 {% for illustration in elem.illustrations %}
                 <img class="message-box__carousel__item"
-                     src="{{ host }}/static/illustration/{{ illustration['id'] }}.png" data-i="{{ illustration.id }}"
+                     src="/static/illustration/{{ illustration['id'] }}.png" data-i="{{ illustration.id }}"
                      data-identifier="{{ elem.id }}">
                 {% endfor %}
             </div>
@@ -180,7 +180,7 @@
                              class="{% if el.illustrations %}message-box__carousel{% else %}nodisplay{% endif %}">
                             {% for illustration in el.illustrations %}
                             <img class="message-box__carousel__item"
-                                 src="{{ host }}/static/illustration/{{ illustration['id'] }}.png"
+                                 src="/static/illustration/{{ illustration['id'] }}.png"
                                  data-i="{{ illustration.id }}" data-identifier="{{ el.id }}">
                             {% endfor %}
                         </div>
