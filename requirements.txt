@@ -3,5 +3,4 @@ flask
 flask-login
 SQLAlchemy-serializer
 werkzeug
-flask-wtf
 requests

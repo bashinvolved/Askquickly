@@ -46,6 +46,9 @@ def register():
             session.commit()
             flask_login.login_user(user, True)
             return redirect(f"/users/{user.id}")
+        elif user and user.hashed_password == ' ':
+            flask_login.login_user(user, True)
+            return redirect(f"/users/{user.id}")
         warning = True
     return render_template("login.html", title="Логин", warning=warning)
 

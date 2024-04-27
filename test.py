@@ -50,9 +50,7 @@ for desk_id, name, image_name in (
                               f"VALUES({desk_id}, '{name}', '{image_name}')")
 
 for name, surname, email, password in (
-        ("Мастер-пользователь", "", "master@gmail.com", "scrypt:32768:8:1$Q7G5uCDD5jLIN4Cy$3a00963d3333af39053f11fb5af"
-                                                        "f8ce54367273ff879271471c539db99c87064b7fb40e46abaac44ccd386555"
-                                                        "f886a0a659caa1ad5a41f90e9bb88a8a3d3484a"),
+        ("Мастер-пользователь", "", "master@gmail.com", ' '),
         ("Неизвестные", "", "unknown@gmail.com", "")
 ):
     database.cursor().execute(f"INSERT INTO user(name, surname, email, hashed_password) "

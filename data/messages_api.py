@@ -11,8 +11,6 @@ from .message import Message
 from .user import User
 from .illustration import Illustration
 from.alert import Alert
-from os.path import dirname, realpath
-import os
 
 
 COUNT_OF_MESSAGES = 25
@@ -49,11 +47,12 @@ def get_conversation(desk, thread, message_identifier):
     messages = [{
         "id": elem.id,
         "root": elem.root,
-        "writer": (us := session.query(User).filter(User.id == elem.writer).first()).name + f" {us.surname}",
+        "writer": session.query(User).get(elem.writer).name + f" {session.query(User).get(elem.writer).surname}",
         "writer_id": elem.writer,
         "hashed_key": elem.hashed_key,
         "text": elem.text,
-        "illustrations": [e.to_dict() for e in session.query(Illustration).filter(Illustration.message_id == elem.id).all()],
+        "illustrations": [e.to_dict() for e in session.query(Illustration)
+                          .filter(Illustration.message_id == elem.id).all()],
         "number": elem.number
     } for elem in messages]
     return jsonify(
@@ -70,7 +69,8 @@ def get_total(desk, thread):
     thread_id = session.query(Thread).filter(Thread.desk_id == desk_id, Thread.image_name == thread).first().id
     return jsonify(
         {
-            "total": session.query(Message.id).filter(Message.desk == desk_id, Message.thread == thread_id).count()
+            "total": session.query(Message.id).filter(Message.desk == desk_id,
+                                                      Message.thread == thread_id).count()
         }
     )
 
@@ -131,7 +131,8 @@ def post_message(desk, thread, message_identifier):
         message.text = request.form["text"]
         if request.form.get("obtainkey", None):
             message.set_key(request.form["obtainkey"])
-        message.number = requests.get(f"{flask.request.host_url}/api/messages/{desk}/{thread}/total").json()["total"] + 1
+        message.number = requests.get(f"{flask.request.host_url}/api/messages/{desk}/{thread}/total").json()["total"] \
+            + 1
         session.add(message)
         session.commit()
         if flask_login.current_user.id != 2:
@@ -158,13 +159,17 @@ def post_message(desk, thread, message_identifier):
     return flask.redirect(str(message.id))
 
 
+@blueprint.route("/desks/<string:desk>/<string:thread>")
+def messages_redirect(desk, thread):
+    return flask.redirect(f"/desks/{desk}/{thread}/1")
+
+
 @blueprint.route("/desks/<string:desk>/<string:thread>/<int:message_identifier>")
 def messages(desk, thread, message_identifier):
+    if flask_login.current_user.is_anonymous:
+        return flask.redirect('/')
     total = requests.get(f"{flask.request.host_url}/api/messages/{desk}/{thread}/total").json()["total"]
     message_identifier = abs(int(message_identifier))
-    # if not (1 <= int(message_identifier) <= total):
-    #     message_identifier = max(1, min(message_identifier, total))
-    #     return flask.redirect(f"{message_identifier}")
     return render_template("messages.html", total=total, title="Обсуждения",
                            current_user=current_user,
                            description=requests
