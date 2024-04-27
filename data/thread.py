@@ -11,3 +11,4 @@ class Thread(SqlAlchemyBase, SerializerMixin):
     desk = orm.relationship("Desk")
     name = sqlalchemy.Column(sqlalchemy.String)
     image_name = sqlalchemy.Column(sqlalchemy.String, unique=True)
+    binary = sqlalchemy.Column(sqlalchemy.String)

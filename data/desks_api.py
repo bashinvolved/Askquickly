@@ -1,3 +1,5 @@
+import base64
+
 import flask
 import flask_login
 import requests
@@ -16,12 +18,13 @@ blueprint = flask.Blueprint(
 )
 
 
-@blueprint.route("/delete/thread/<string:image_name>", methods=["GET"])
-def delete_thread(image_name):
-    if flask_login.current_user != 1:
+@blueprint.route("/delete/thread/<string:desk>/<string:image_name>", methods=["GET"])
+def delete_thread(desk, image_name):
+    if flask_login.current_user.id != 1:
         return flask.make_response(jsonify({"error": "Forbidden"}), 403)
     session = db_session.create_session()
-    thread = session.query(Thread).filter(Thread.image_name == image_name).first()
+    desk = session.query(Desk).filter(Desk.image_name == desk).first()
+    thread = session.query(Thread).filter(Thread.image_name == image_name, Thread.desk_id == desk.id).first()
     for elem in session.query(Message).filter(Message.thread == thread.id).all():
         session.delete(elem)
     session.delete(thread)
@@ -31,7 +34,7 @@ def delete_thread(image_name):
 
 @blueprint.route("/delete/desk/<string:image_name>", methods=["GET"])
 def delete_desk(image_name):
-    if flask_login.current_user != 1:
+    if flask_login.current_user.id != 1:
         return flask.make_response(jsonify({"error": "Forbidden"}), 403)
     session = db_session.create_session()
     desk = session.query(Desk).filter(Desk.image_name == image_name).first()
@@ -46,27 +49,28 @@ def delete_desk(image_name):
 
 @blueprint.route("/post/desk", methods=["GET"])
 def post_desk_form():
-    if flask_login.current_user != 1:
+    if flask_login.current_user.id != 1:
         return flask.make_response(jsonify({"error": "Forbidden"}), 403)
     return render_template("postdesk.html")
 
 
 @blueprint.route("/post/thread", methods=["GET"])
 def post_thread_form():
-    if flask_login.current_user != 1:
+    if flask_login.current_user.id != 1:
         return flask.make_response(jsonify({"error": "Forbidden"}), 403)
     return render_template("postthread.html")
 
 
 @blueprint.route("/post/thread", methods=["POST"])
 def post_thread():
-    if flask_login.current_user != 1:
+    if flask_login.current_user.id != 1:
         return flask.make_response(jsonify({"error": "Forbidden"}), 403)
     session = db_session.create_session()
     thread = Thread()
     thread.desk_id = session.query(Desk).filter(Desk.image_name == flask.request.form["desk_id"]).first().id
     thread.name = flask.request.form["name"]
     thread.image_name = flask.request.form["image_name"]
+    thread.binary = str(base64.b64encode(flask.request.files["picture"].read()))[2:-1]
     session.add(thread)
     session.commit()
     message = Message()
@@ -81,12 +85,13 @@ def post_thread():
 
 @blueprint.route("/post/desk", methods=["POST"])
 def post_desk():
-    if flask_login.current_user != 1:
+    if flask_login.current_user.id != 1:
         return flask.make_response(jsonify({"error": "Forbidden"}), 403)
     session = db_session.create_session()
     desk = Desk()
     desk.name = flask.request.form["name"]
     desk.image_name = flask.request.form["image_name"]
+    desk.binary = str(base64.b64encode(flask.request.files["picture"].read()))[2:-1]
     session.add(desk)
     session.commit()
     return flask.redirect("/post/thread")
@@ -98,7 +103,7 @@ def get_desks():
     desks = session.query(Desk).all()
     return jsonify(
         {
-            "desks": [elem.to_dict(only=("name", "image_name")) for elem in desks]
+            "desks": [elem.to_dict(only=("name", "image_name", "binary")) for elem in desks]
         }
     )
 
@@ -111,7 +116,7 @@ def get_threads(desk):
         return make_response(jsonify({"error": "Not found"}), 404)
     return jsonify(
         {
-            "threads": [elem.to_dict(only=("name", "image_name")) for elem in threads]
+            "threads": [elem.to_dict(only=("name", "image_name", "binary")) for elem in threads]
         }
     )
 

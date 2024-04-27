@@ -1,9 +1,22 @@
+import os
 import sqlite3
 
 import requests
+import base64
 
 # print(requests.get("http://127.0.0.1:5000/api/categories/1").json())
 database = sqlite3.connect("db/base.sqlite")
+
+# for id, image_name in database.cursor().execute("SELECT id, image_name FROM desk"):
+#     data = open(f"static/img/{image_name}.png", "rb").read()
+#     database.cursor().execute(f"UPDATE desk SET binary = '{str(base64.b64encode(data))[2:-1]}' WHERE id = {id}")
+# for id, image_name in database.cursor().execute("SELECT id, image_name FROM thread"):
+#     data = open(f"static/img/{image_name}.png", "rb").read()
+#     database.cursor().execute(f"UPDATE thread SET binary = '{str(base64.b64encode(data))[2:-1]}' WHERE id = {id}")
+# database.commit()
+#
+# 1 / 0
+
 for name, image_name in (
         ("Разработка программного обеспечения", "development"),
         ("Игры", "games"),

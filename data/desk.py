@@ -8,3 +8,4 @@ class Desk(SqlAlchemyBase, SerializerMixin):
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, autoincrement=True)
     name = sqlalchemy.Column(sqlalchemy.String)
     image_name = sqlalchemy.Column(sqlalchemy.String, unique=True)
+    binary = sqlalchemy.Column(sqlalchemy.String)
