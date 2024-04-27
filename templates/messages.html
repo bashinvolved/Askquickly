@@ -29,7 +29,7 @@
                 <div class="counter__switcher__arrow counter__switcher__arrow_right"></div>
             </a>
         </div>
-        <p>#{{ description[0].id }} — #{{ description[-1].id }} Всего: {{ total }}</p>
+        <p>{{ description[0].number }} — {{ description[-1].number }} Всего: {{ total }}</p>
     </div>
 </div>
 
@@ -107,7 +107,7 @@
                  class="{% if elem.illustrations %}message-box__carousel{% else %}nodisplay{% endif %}">
                 {% for illustration in elem.illustrations %}
                 <img class="message-box__carousel__item"
-                     src="/static/illustration/{{ illustration['id'] }}.png" data-i="{{ illustration.id }}"
+                     src="data:image;base64, {{ illustration.binary }}" data-i="{{ illustration.id }}"
                      data-identifier="{{ elem.id }}">
                 {% endfor %}
             </div>
@@ -180,7 +180,7 @@
                              class="{% if el.illustrations %}message-box__carousel{% else %}nodisplay{% endif %}">
                             {% for illustration in el.illustrations %}
                             <img class="message-box__carousel__item"
-                                 src="/static/illustration/{{ illustration['id'] }}.png"
+                                 src="data:image;base64, {{ illustration.binary }}"
                                  data-i="{{ illustration.id }}" data-identifier="{{ el.id }}">
                             {% endfor %}
                         </div>

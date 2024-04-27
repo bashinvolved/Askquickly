@@ -84,7 +84,7 @@ def profile(user_id):
     warning = False
     session = db_session.create_session()
     if request.method == "POST":
-        if user_id not in [flask_login.current_user.id, 1]:
+        if not (user_id == flask_login.current_user.id or flask_login.current_user.id == 1):
             return flask.make_response(flask.jsonify({"error": "Forbidden"}), 403)
         user = session.query(User).get(user_id)
         if request.form.get("name"):

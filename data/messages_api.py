@@ -1,6 +1,7 @@
 import flask
 import flask_login
 import requests
+import base64
 from flask import jsonify, request, render_template
 from flask_login import current_user
 from . import db_session
@@ -52,7 +53,8 @@ def get_conversation(desk, thread, message_identifier):
         "writer_id": elem.writer,
         "hashed_key": elem.hashed_key,
         "text": elem.text,
-        "illustrations": [e.to_dict() for e in session.query(Illustration).filter(Illustration.message_id == elem.id).all()]
+        "illustrations": [e.to_dict() for e in session.query(Illustration).filter(Illustration.message_id == elem.id).all()],
+        "number": elem.number
     } for elem in messages]
     return jsonify(
         {
@@ -80,19 +82,18 @@ def messages_action(message_id, operation):
     if operation == "delete":
         session = db_session.create_session()
         message = session.query(Message).get(message_id)
-        if message.writer not in [flask_login.current_user.id, 1]:
+        if not (message.writer == flask_login.current_user.id or flask_login.current_user.id == 1):
             return flask.make_response(jsonify({"error": "Forbidden"}), 403)
         prev = session.query(Message).filter(Message.id < message.id, Message.root == None).all()[-1].id
         href = f"{session.query(Desk).get(message.desk).image_name}/{session.query(Thread).get(message.thread).image_name}"
         for elem in session.query(Message).filter(Message.root == message_id):
             for el in session.query(Illustration).filter(Illustration.message_id == elem.id).all():
-                os.remove(f"{dirname(realpath(__file__))[:-4]}\\static\\illustration\\{el.id}.png")
+                session.delete(el)
             session.delete(elem)
         session.delete(message)
         for elem in session.query(Alert).filter(Alert.message_id == message_id).all():
             session.delete(elem)
         for elem in session.query(Illustration).filter(Illustration.message_id == message_id).all():
-            os.remove(f"{dirname(realpath(__file__))[:-4]}\\static\\illustration\\{elem.id}.png")
             session.delete(elem)
         session.commit()
     return flask.redirect(f"/desks/{href}/{prev}")
@@ -106,12 +107,11 @@ def post_message(desk, thread, message_identifier):
     if request.form.get("met") == "put":
         identifier = int(request.form["towhom2"] if request.form.get("towhom2") else request.form["towhom"])
         message = session.query(Message).get(identifier)
-        if message.writer not in [flask_login.current_user.id, 1]:
+        if not (message.writer == flask_login.current_user.id or flask_login.current_user.id == 1):
             return flask.make_response(jsonify({"error": "Forbidden"}), 403)
         message.text = request.form["text"]
         if request.form["removements"]:
             for el in set(request.form["removements"].split('|')[:-1]):
-                os.remove(f"{dirname(realpath(__file__))[:-4]}\\static\\illustration\\{int(el)}.png")
                 session.delete(session.query(Illustration).get(int(el)))
         session.commit()
     elif request.form.get("met") == "key":
@@ -131,30 +131,29 @@ def post_message(desk, thread, message_identifier):
         message.text = request.form["text"]
         if request.form.get("obtainkey", None):
             message.set_key(request.form["obtainkey"])
+        message.number = requests.get(f"{flask.request.host_url}/api/messages/{desk}/{thread}/total").json()["total"] + 1
         session.add(message)
         session.commit()
-        if request.form.get("towhom", None):
-            if session.query(Message).get(message.root).writer != message.writer:
-                alert = Alert()
-                alert.message_id = message.id
-                alert.user_id = session.query(Message).get(message.root).writer
-                session.add(alert)
-        if request.form.get("towhom2", None):
-            if session.query(Message).get(int(request.form["towhom2"])).writer != message.writer:
-                alert = Alert()
-                alert.message_id = message.id
-                alert.user_id = session.query(Message).get(int(request.form["towhom2"])).writer
-                session.add(alert)
+        if flask_login.current_user.id != 2:
+            if request.form.get("towhom", None):
+                if session.query(Message).get(message.root).writer != message.writer:
+                    alert = Alert()
+                    alert.message_id = message.id
+                    alert.user_id = session.query(Message).get(message.root).writer
+                    session.add(alert)
+            if request.form.get("towhom2", None):
+                if session.query(Message).get(int(request.form["towhom2"])).writer != message.writer:
+                    alert = Alert()
+                    alert.message_id = message.id
+                    alert.user_id = session.query(Message).get(int(request.form["towhom2"])).writer
+                    session.add(alert)
     for elem in request.files.getlist("pictures"):
         if not elem.filename:
             continue
         illustration = Illustration()
         illustration.message_id = message.id
+        illustration.binary = str(base64.b64encode(elem.read()))[2:-1]
         session.add(illustration)
-        session.commit()
-        f = open(f"{dirname(realpath(__file__))[:-4]}\\static\\illustration\\{illustration.id}.png", "wb")
-        f.write(elem.read())
-        f.close()
     session.commit()
     return flask.redirect(str(message.id))
 
@@ -169,5 +168,5 @@ def messages(desk, thread, message_identifier):
     return render_template("messages.html", total=total, title="Обсуждения",
                            current_user=current_user,
                            description=requests
-                           .get(f"{flask.host_url}/api/messages/{desk}/{thread}/{message_identifier}")
+                           .get(f"{flask.request.host_url}/api/messages/{desk}/{thread}/{message_identifier}")
                            .json()["messages"], count_of_messages=COUNT_OF_MESSAGES)

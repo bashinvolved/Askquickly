@@ -15,6 +15,7 @@ class Message(SqlAlchemyBase, SerializerMixin):
     user = orm.relationship("User")
     hashed_key = sqlalchemy.Column(sqlalchemy.String)
     text = sqlalchemy.Column(sqlalchemy.String)
+    number = sqlalchemy.Column(sqlalchemy.Integer)
 
     def set_key(self, key):
         self.hashed_key = generate_password_hash(key)
